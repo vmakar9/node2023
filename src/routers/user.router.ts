@@ -6,8 +6,8 @@ const router = Router()
 
 router.get('/',userController.getAll);
 router.get('/:userId',userMiddleware.getByIdAndThrow,userController.getById);
-router.post('/',userMiddleware.isUserValidCreate,userController.create);
-router.put('/:userId',userMiddleware.isUserValidUpdate,userController.update);
+router.post('/',userMiddleware.isValidCreate,userController.create);
+router.put('/:userId',userMiddleware.isValidUpdate,userController.update);
 router.delete('/:userId',userController.delete);
 
 
