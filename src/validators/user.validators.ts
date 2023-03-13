@@ -1,13 +1,12 @@
 import * as Joi from "joi";
 
 
-import { EGenders } from "../types/user.types";
-import {regexConstants} from "../constants/regex.constans";
+import { EGenders } from "../enum/gender.enum";
 
 export class UserValidator {
     private static firstName = Joi.string().min(2).max(50).trim();
     private static email = Joi.string()
-        .regex(regexConstants.EMAIL)
+
         .lowercase()
         .trim();
     private static password = Joi.string();

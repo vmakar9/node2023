@@ -16,12 +16,28 @@ class AuthController {
 
     public async login(req:Request, res:Response,next:NextFunction):Promise<Response<ITokenPair>>{
         try {
-              const{email,password} =  req.body
+            const{email,password} =  req.body
             const user = req.res.locals;
              const tokenPair = await authService.login({email,password},user as IUser)
              return res.status(200).json(tokenPair)
         }catch (e) {
             next(e)
+        }
+    }
+
+    public async refresh(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<Response<ITokenPair>> {
+        try {
+            const { tokenInfo, jwtPayload } = req.res.locals;
+
+            const tokenPair = await authService.refresh(tokenInfo, jwtPayload);
+
+            return res.status(200).json(tokenPair);
+        } catch (e) {
+            next(e);
         }
     }
 }
