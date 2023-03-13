@@ -51,6 +51,7 @@ class UserMiddleware{
 
                 const user = await User.findOne({ [dbField]: fieldValue });
 
+
                 if (!user) {
                     throw new ApiError(`User not found`, 422);
                 }
