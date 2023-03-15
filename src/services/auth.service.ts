@@ -7,7 +7,10 @@ import {tokenService} from "./token.service";
 import {ITokenPair, ITokenPayload} from "../types/token.types";
 import {Token} from "../models/Token.models";
 import {emailService} from "./email.service";
-import {EEmailActions} from "../constants/email.constants";
+
+import {smsService} from "./sms.services";
+import {ESmsActionEnum} from "../enum/sms-action.enum";
+import {EEmailActions} from "../enum/email.enum";
 
 class AuthService{
     public async register(body:IUser):Promise<void>{
@@ -16,7 +19,11 @@ class AuthService{
          const hashedPassword = await passwordService.hash(password);
         await User.create({...body,password:hashedPassword});
 
-        await emailService.sendEmail("vmakar941@gmail.com",EEmailActions.WELCOME);
+        await Promise.all([
+             smsService.sendSms('+380635854850',ESmsActionEnum.WELCOME),
+             emailService.sendEmail("vmakar941@gmail.com",EEmailActions.WELCOME),
+        ]);
+
         }catch (e) {
             throw new ApiError(e.message,e.status);
         }
