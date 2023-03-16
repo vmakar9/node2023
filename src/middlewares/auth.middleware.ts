@@ -18,7 +18,7 @@ class AuthMiddleware{
                 throw new ApiError("No token",401)
             }
             const jwtPayload = tokenService.checkToken(accessToken)
-            const tokenInfo = await Token.findById({accessToken})
+            const tokenInfo = await Token.findOne({accessToken})
             if(!tokenInfo){
                 throw new ApiError("Token not value",401);
             }
@@ -41,7 +41,7 @@ class AuthMiddleware{
 
             const jwtPayload = tokenService.checkToken(refreshToken,ETokenType.refresh)
 
-            const tokenInfo = await Token.findById({refreshToken});
+            const tokenInfo = await Token.findOne({refreshToken});
             if(!tokenInfo){
                 throw new ApiError("Token not value",401);
             }
