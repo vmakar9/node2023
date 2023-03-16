@@ -29,4 +29,10 @@ router.post('/password/change',
     userMiddleware.getDynamicallyAndThrow("email"),
     authController.changePassword)
 
+router.post('/password/forgot',
+    userMiddleware.getDynamicallyAndThrow("email"),
+    authController.forgotPassword)
+
+router.put('/password/forgot/:token',authMiddleware.checkActionForgotToken,authController.setForgotPassword)
+
 export const authRouter = router

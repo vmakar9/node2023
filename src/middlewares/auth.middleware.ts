@@ -3,6 +3,8 @@ import {ApiError} from "../errors/api.error";
 import {Token} from "../models/Token.models";
 import {tokenService} from "../services/token.service";
 import {ETokenType} from "../enum/token.enum";
+import {EActionTokenType} from "../enum/action-token-type";
+import {Action} from "../models/Action.model";
 
 class AuthMiddleware{
     public async checkAccesToken(
@@ -49,6 +51,37 @@ class AuthMiddleware{
             next(e)
         }
     }
+
+    public async checkActionForgotToken(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const actionToken = req.params.token;
+
+            if (!actionToken) {
+                throw new ApiError("No token", 401);
+            }
+
+            const jwtPayload = tokenService.checkActionToken(
+                actionToken,
+                EActionTokenType.forgot
+            );
+
+            const tokenInfo = await Action.findOne({ actionToken });
+
+            if (!tokenInfo) {
+                throw new ApiError("Token not valid", 401);
+            }
+
+            req.res.locals = { tokenInfo, jwtPayload };
+            next();
+        } catch (e) {
+            next(e);
+        }
+    }
+
 }
 
 export const authMiddleware = new AuthMiddleware();
