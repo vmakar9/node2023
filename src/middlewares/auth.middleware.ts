@@ -7,7 +7,7 @@ import {EActionTokenType} from "../enum/action-token-type";
 import {Action} from "../models/Action.model";
 
 class AuthMiddleware{
-    public async checkAccesToken(
+    public async checkAccessToken(
         req: Request,
         res: Response,
         next: NextFunction
@@ -19,9 +19,11 @@ class AuthMiddleware{
             }
             const jwtPayload = tokenService.checkToken(accessToken)
             const tokenInfo = await Token.findOne({accessToken})
+
             if(!tokenInfo){
                 throw new ApiError("Token not value",401);
             }
+
             req.res.locals = { tokenInfo, jwtPayload };
             next();
         }catch (e) {
@@ -42,9 +44,11 @@ class AuthMiddleware{
             const jwtPayload = tokenService.checkToken(refreshToken,ETokenType.refresh)
 
             const tokenInfo = await Token.findOne({refreshToken});
+
             if(!tokenInfo){
                 throw new ApiError("Token not value",401);
             }
+            console.log(tokenInfo)
             req.res.locals = { tokenInfo, jwtPayload };
             next();
         }catch (e) {
@@ -74,7 +78,7 @@ class AuthMiddleware{
             if (!tokenInfo) {
                 throw new ApiError("Token not valid", 401);
             }
-
+            console.log(tokenInfo)
             req.res.locals = { tokenInfo, jwtPayload };
             next();
         } catch (e) {

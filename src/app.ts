@@ -4,9 +4,9 @@ const  app = express();
 
 import mongoose from "mongoose";
 import {userRouter} from "./routers/user.router";
-import {IError} from "./types/common.types";
 import {configs} from "./configs/config";
 import {authRouter} from "./routers/auth.router";
+import {ApiError} from "./errors/api.error";
 
 
 
@@ -16,8 +16,8 @@ app.use(express.urlencoded({extended: true}))
 app.use("/users",userRouter);
 app.use("/auth", authRouter);
 
-app.use((err:IError,req:Request,res:Response,next:NextFunction)=>  {
-    const status = err.status;
+app.use((err:ApiError,req:Request,res:Response,next:NextFunction)=>  {
+    const status = err.status ||500;
 
    res.status(err.status).json({
        message: err.message,

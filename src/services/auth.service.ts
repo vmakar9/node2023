@@ -1,35 +1,36 @@
-import {ApiError} from "../errors/api.error";
 import {IUser} from "../types/user.types";
 import {passwordService} from "./password.services";
 import {User} from "../models/User.model";
+import { emailService } from "./email.service";
+import {EEmailActions} from "../enum/email.enum";
+import {ITokenPair, ITokenPayload} from "../types/token.types";
+import { ApiError } from "../errors/api.error";
 import {ICredentials} from "../types/auth.types";
 import {tokenService} from "./token.service";
-import {ITokenPair, ITokenPayload} from "../types/token.types";
 import {Token} from "../models/Token.models";
-import {emailService} from "./email.service";
-
-import {smsService} from "./sms.services";
-import {ESmsActionEnum} from "../enum/sms-action.enum";
-import {EEmailActions} from "../enum/email.enum";
-import {EActionTokenType} from "../enum/action-token-type";
 import {Action} from "../models/Action.model";
+import {EActionTokenType} from "../enum/action-token-type";
 
-class AuthService{
-    public async register(body:IUser):Promise<void>{
+class AuthService {
+    public async register(body: IUser): Promise<void> {
         try {
-            const {password} = body;
-         const hashedPassword = await passwordService.hash(password);
-        await User.create({...body,password:hashedPassword});
+            const { password } = body;
+            const hashedPassword = await passwordService.hash(password);
+            await User.create({
+                ...body,
+                password: hashedPassword,
+            });
 
-        await Promise.all([
-             smsService.sendSms('+380635854850',ESmsActionEnum.WELCOME),
-             emailService.sendEmail("vmakar941@gmail.com",EEmailActions.WELCOME),
-        ]);
+            await Promise.all([
+                // smsService.sendSms(body.phone, ESmsActionEnum.WELCOME),
+                emailService.sendEmail(body.email, EEmailActions.WELCOME),
+            ]);
+        } catch (e) {
 
-        }catch (e) {
-            throw new ApiError(e.message,e.status);
+            throw new ApiError(e.message, e.status);
         }
     }
+
     public async login(
         credentials: ICredentials,
         user: IUser
@@ -41,7 +42,7 @@ class AuthService{
             );
 
             if (!isMatched) {
-                throw new ApiError("Invalid email or password", 400);
+                throw new ApiError("Invalid email or password", 409);
             }
 
             const tokenPair = tokenService.generateTokenPair({
@@ -88,7 +89,10 @@ class AuthService{
         try {
             const user = await User.findById(userId);
 
-            const isMatched = await passwordService.compare(oldPassword, user.password);
+            const isMatched = await passwordService.compare(
+                oldPassword,
+                user.password
+            );
 
             if (!isMatched) {
                 throw new ApiError("Wrong old password", 400);
@@ -96,23 +100,31 @@ class AuthService{
 
             const hashedNewPassword = await passwordService.hash(newPassword);
             await User.updateOne({ _id: user._id }, { password: hashedNewPassword });
-        }catch (e) {
-            throw new ApiError(e.message,e.status)
+        } catch (e) {
+            throw new ApiError(e.message, e.status);
         }
-
     }
 
-    public async forgotPassword(
-       user: IUser
-    ): Promise<void> {
+    public async forgotPassword(user: IUser): Promise<void> {
         try {
-            const actionToken = tokenService.generateActionToken({_id:user._id},EActionTokenType.forgot)
-            await Action.create({actionToken,tokenType:EActionTokenType.forgot, _user_id:user._id});
-            await emailService.sendEmail(user.email, EEmailActions.FORGOT_PASSWORD, {token:actionToken})
-        }catch (e) {
-            throw new ApiError(e.status,e.message)
+            const actionToken = tokenService.generateActionToken(
+                { _id: user._id },
+                EActionTokenType.forgot
+            );
+            await Action.create({
+                actionToken,
+                tokenType: EActionTokenType.forgot,
+                _user_id: user._id,
+            });
+
+            await emailService.sendEmail(user.email, EEmailActions.FORGOT_PASSWORD, {
+                token: actionToken,
+            });
+        } catch (e) {
+            throw new ApiError(e.message, e.status);
         }
     }
+
     public async setForgotPassword(password: string, id: string): Promise<void> {
         try {
             const hashedPassword = await passwordService.hash(password);
@@ -122,6 +134,6 @@ class AuthService{
             throw new ApiError(e.message, e.status);
         }
     }
-
 }
+
 export const authService = new AuthService();

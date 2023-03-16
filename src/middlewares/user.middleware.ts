@@ -1,158 +1,78 @@
-import {NextFunction, Request, Response} from "express";
+import {NextFunction,Request,Response} from "express";
 import {User} from "../models/User.model";
 import {ApiError} from "../errors/api.error";
-import {UserValidator} from "../validators/user.validators";
-import {isObjectIdOrHexString} from "mongoose";
-import {IRequest} from "../types/user.types";
+import {IUser} from "../types/user.types";
 
-class UserMiddleware{
-   public async getByIdAndThrow(req:Request,res:Response,next:NextFunction):Promise<void>{
-       try {
-           const {userId} = req.params;
-           const user = await User.findById(userId);
-           if(!user){
-               throw new ApiError("User not found",404);
-           }
-           next();
-       }catch (e) {
-         next(e);
-       }
+class UserMiddleware {
+    public async getByIdOrThrow(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { userId } = req.params;
 
-   }
-   public getDynamicallyAndThrow(
-       fieldName:string,
-       from = "body",
-       dbField = fieldName
-   ) {
-       return async (req:IRequest,res:Response,next:NextFunction)=>  {
-          try {
-            const fieldValue =  req[from][fieldName];
+            const user = await User.findById(userId);
 
-            const user = await User.findOne({[dbField]:fieldValue});
-
-            if (user){
-                throw new ApiError(`User with ${fieldName} ${fieldValue} already exist`,409)
+            if (!user) {
+                throw new ApiError("User not found", 422);
             }
 
-           next();
-          }catch (e) {
-            next(e)
-          }
+            res.locals = { user };
+            next();
+        } catch (e) {
+            next(e);
         }
-   }
-    public getDynamicallyOrThrow(
+    }
+
+    public getDynamicallyAndThrow(
         fieldName: string,
-        from = "body",
-        dbField = fieldName
+        from: "body" | "query" | "params" = "body",
+        dbField: keyof IUser = "email"
     ) {
-        return async (req: IRequest, res: Response, next: NextFunction) => {
+        return async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const fieldValue = req[from][fieldName];
 
                 const user = await User.findOne({ [dbField]: fieldValue });
 
-
-                if (!user) {
-                    throw new ApiError(`User not found`, 422);
+                if (user) {
+                    throw new ApiError(
+                        `User with ${fieldName} ${fieldValue} already exist`,
+                        409
+                    );
                 }
-
-                req.res.locals = user;
 
                 next();
             } catch (e) {
                 next(e);
             }
-        }
+        };
     }
 
-    public async isIdValid(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> {
-        try {
-            if (!isObjectIdOrHexString(req.params.userId)) {
-                throw new ApiError("ID not valid", 400);
+    public getDynamicallyOrThrow(
+        fieldName: string,
+        from: "body" | "query" | "params" = "body",
+        dbField: keyof IUser = "email"
+    ) {
+        return async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const fieldValue = req[from][fieldName];
+
+                const user = await User.findOne({ [dbField]: fieldValue });
+
+                if (!user) {
+                    throw new ApiError(`User not found`, 422);
+                }
+
+                req.res.locals = { user };
+
+                next();
+            } catch (e) {
+                next(e);
             }
-            next();
-        } catch (e) {
-            next(e);
-        }
+        };
     }
-
-    public async isValidCreate(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> {
-        try {
-            const { error, value } = UserValidator.createUser.validate(req.body);
-
-            if (error) {
-                throw new ApiError(error.message, 400);
-            }
-
-            req.body = value;
-            next();
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async isValidUpdate(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> {
-        try {
-            const { error, value } = UserValidator.updateUser.validate(req.body);
-
-            if (error) {
-                throw new ApiError(error.message, 400);
-            }
-
-            req.body = value;
-            next();
-        } catch (e) {
-            next(e);
-        }
-    }
-    public async isValidLogin(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> {
-        try {
-            const {error} = UserValidator.loginUser.validate(req.body);
-
-            if (error) {
-                throw new ApiError(error.message, 400);
-            }
-
-            next();
-        } catch (e) {
-            next(e);
-        }
-    }
-    public async isValidChangePassword(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> {
-        try {
-            const {error} = UserValidator.changeUserPassword.validate(req.body);
-
-            if (error) {
-                throw new ApiError(error.message, 400);
-            }
-
-            next();
-        } catch (e) {
-            next(e);
-        }
-
-    }
-
 }
 
-export const userMiddleware = new UserMiddleware()
+export const userMiddleware = new UserMiddleware();

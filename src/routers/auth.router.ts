@@ -8,13 +8,11 @@ import {authMiddleware} from "../middlewares/auth.middleware";
 const router = Router()
 
 
-router.post('/login',
-    userMiddleware.isValidLogin,
+router.post("/login",
     userMiddleware.getDynamicallyOrThrow("email"),
     authController.login)
 
 router.post('/register',
-    userMiddleware.isValidCreate,
     userMiddleware.getDynamicallyAndThrow("email"),
     authController.register
     );
@@ -24,8 +22,7 @@ router.post('/refresh',
     authController.refresh)
 
 router.post('/password/change',
-    userMiddleware.isValidChangePassword,
-    authMiddleware.checkAccesToken,
+    authMiddleware.checkAccessToken,
     userMiddleware.getDynamicallyAndThrow("email"),
     authController.changePassword)
 

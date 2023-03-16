@@ -1,6 +1,6 @@
 import {NextFunction,Request,Response} from "express";
 import {authService} from "../services/auth.service";
-import {IUser} from "../types/user.types";
+
 import {ITokenPair} from "../types/token.types";
 
 
@@ -15,14 +15,20 @@ class AuthController {
         }
     }
 
-    public async login(req:Request, res:Response,next:NextFunction):Promise<Response<ITokenPair>>{
+    public async login(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<Response<ITokenPair>> {
         try {
-            const{email,password} =  req.body
-            const user = req.res.locals;
-             const tokenPair = await authService.login({email,password},user as IUser)
-             return res.status(200).json(tokenPair)
-        }catch (e) {
-            next(e)
+            const { email, password } = req.body;
+            const { user } = req.res.locals;
+
+            const tokenPair = await authService.login({ email, password }, user);
+
+            return res.status(200).json(tokenPair);
+        } catch (e) {
+            next(e);
         }
     }
 
@@ -33,7 +39,7 @@ class AuthController {
     ): Promise<Response<ITokenPair>> {
         try {
             const { tokenInfo, jwtPayload } = req.res.locals;
-
+            console.log(tokenInfo)
             const tokenPair = await authService.refresh(tokenInfo, jwtPayload);
 
             return res.status(200).json(tokenPair);
@@ -46,7 +52,7 @@ class AuthController {
         try {
             const { tokenInfo } = req.res.locals;
             const { oldPassword, newPassword } = req.body;
-
+            console.log(tokenInfo)
             await authService.changePassword(
                 tokenInfo._user_id,
                 oldPassword,
@@ -76,7 +82,7 @@ class AuthController {
         try {
             const { password } = req.body;
             const { tokenInfo } = req.res.locals;
-
+            console.log(tokenInfo)
             await authService.setForgotPassword(password, tokenInfo._user_id);
 
             res.sendStatus(200);

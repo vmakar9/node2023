@@ -7,12 +7,3 @@ export interface IUser {
     gender: string;
 }
 
-export interface ICommonResponse<T>{
-    message: string;
-    data: T
-}
-interface IIndex{
-    [key:string]:any
-}
-export type IRequest = IIndex;
-
