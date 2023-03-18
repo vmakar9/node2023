@@ -1,8 +1,9 @@
-import {Router } from "express"
+import {Router} from "express"
 
 import {userMiddleware} from "../middlewares/user.middleware";
 import {authController} from "../controllers/auth.controller";
 import {authMiddleware} from "../middlewares/auth.middleware";
+import {EActionTokenType} from "../enum/action-token-type";
 
 
 const router = Router()
@@ -30,6 +31,13 @@ router.post('/password/forgot',
     userMiddleware.getDynamicallyAndThrow("email"),
     authController.forgotPassword)
 
-router.put('/password/forgot/:token',authMiddleware.checkActionForgotToken,authController.setForgotPassword)
+router.put('/password/forgot/:token',authMiddleware.checkActionToken,authController.setForgotPassword)
 
+router.post('/acivate',
+    userMiddleware.getDynamicallyOrThrow("email"),
+    authController.sendActivateToken)
+
+router.put('/activate/:token',
+    authMiddleware.checkActionToken(EActionTokenType.activate),
+    authController.activate)
 export const authRouter = router

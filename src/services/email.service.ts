@@ -33,18 +33,23 @@ class EmailService{
         })
     }
     public async sendEmail(email: string,emailAction: EEmailActions,locals:Record<string, string> = {}){
-        const templateInfo = allTemplates[emailAction]
-        locals.frontUrl =configs.FRONT_URL
-        const html =  await  this.templateParser.render(
-            templateInfo.templateName,
-            locals
-        )
-        return this.trasnporter.sendMail({
-            from: "No reply",
-            to: email,
-            subject: templateInfo.subject,
-            html,
-        });
+        try {
+            const templateInfo = allTemplates[emailAction]
+            locals.frontUrl =configs.FRONT_URL
+            const html =  await  this.templateParser.render(
+                templateInfo.templateName,
+                locals
+            )
+            return this.trasnporter.sendMail({
+                from: "No reply",
+                to: email,
+                subject: templateInfo.subject,
+                html,
+            });
+        }catch (e) {
+            console.error(e.message)
+        }
+
     }
 }
 export const emailService = new EmailService();

@@ -10,6 +10,8 @@ import {tokenService} from "./token.service";
 import {Token} from "../models/Token.models";
 import {Action} from "../models/Action.model";
 import {EActionTokenType} from "../enum/action-token-type";
+import {EUserStatus} from "../enum/user-status.enum";
+
 
 class AuthService {
     public async register(body: IUser): Promise<void> {
@@ -134,6 +136,35 @@ class AuthService {
             throw new ApiError(e.message, e.status);
         }
     }
+
+    public async sendActivateToken(user: IUser): Promise<void> {
+        try {
+            const actionToken = tokenService.generateActionToken(
+                { _id: user._id },
+                EActionTokenType.activate
+            );
+            await Action.create({
+                actionToken,
+                tokenType: EActionTokenType.activate,
+                _user_id: user._id,
+            });
+
+            await emailService.sendEmail(user.email, EEmailActions.ACTIVATE, {
+                token: actionToken,
+            });
+        } catch (e) {
+            throw new ApiError(e.message, e.status);
+        }
+    }
+
+    public async activate(userId:string):Promise<void>{
+        try {
+            await User.updateOne({_id:userId},{$set:{status: EUserStatus.active}}).lean()
+        }catch (e) {
+            throw new ApiError(e.message, e.status);
+        }
+    }
+
 }
 
 export const authService = new AuthService();
