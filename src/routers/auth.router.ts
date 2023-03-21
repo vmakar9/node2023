@@ -31,7 +31,10 @@ router.post('/password/forgot',
     userMiddleware.getDynamicallyAndThrow("email"),
     authController.forgotPassword)
 
-router.put('/password/forgot/:token',authMiddleware.checkActionToken,authController.setForgotPassword)
+router.put('/password/forgot/:token',authMiddleware.checkActionToken,
+    authMiddleware.checkOldPassword,
+    authController.setForgotPassword,
+    )
 
 router.post('/acivate',
     userMiddleware.getDynamicallyOrThrow("email"),

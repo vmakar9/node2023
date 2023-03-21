@@ -7,6 +7,7 @@ import {userRouter} from "./routers/user.router";
 import {configs} from "./configs/config";
 import {authRouter} from "./routers/auth.router";
 import {ApiError} from "./errors/api.error";
+import {cronRunner} from "./crons/cron.runner";
 
 
 
@@ -29,6 +30,7 @@ app.use((err:ApiError,req:Request,res:Response,next:NextFunction)=>  {
 
 app.listen(configs.PORT, ()=>  {
     mongoose.connect(configs.DB_URL);
+    cronRunner();
     console.log(`Server has started on PORT ${configs.PORT}`)
 })
 

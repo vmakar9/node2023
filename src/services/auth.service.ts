@@ -11,6 +11,7 @@ import {Token} from "../models/Token.models";
 import {Action} from "../models/Action.model";
 import {EActionTokenType} from "../enum/action-token-type";
 import {EUserStatus} from "../enum/user-status.enum";
+import {OldPassword} from "../models/Old.password.model";
 
 
 class AuthService {
@@ -122,6 +123,8 @@ class AuthService {
             await emailService.sendEmail(user.email, EEmailActions.FORGOT_PASSWORD, {
                 token: actionToken,
             });
+
+            await OldPassword.create({_user_id:user._id, password:user.password})
         } catch (e) {
             throw new ApiError(e.message, e.status);
         }
