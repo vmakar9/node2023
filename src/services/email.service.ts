@@ -32,7 +32,7 @@ class EmailService{
             },
         })
     }
-    public async sendEmail(email: string,emailAction: EEmailActions,locals:Record<string, string> = {}){
+    public async sendEmail(email: string | string[],emailAction: EEmailActions,locals:Record<string, string> = {}){
         try {
             const templateInfo = allTemplates[emailAction]
             locals.frontUrl =configs.FRONT_URL
