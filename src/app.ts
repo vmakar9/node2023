@@ -8,12 +8,13 @@ import {configs} from "./configs/config";
 import {authRouter} from "./routers/auth.router";
 import {ApiError} from "./errors/api.error";
 import {cronRunner} from "./crons/cron.runner";
+import {carRouter} from "./routers/car.router";
 
 
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
-
+app.use("/cars", carRouter);
 app.use("/users",userRouter);
 app.use("/auth", authRouter);
 
