@@ -2,6 +2,9 @@ import {User} from "../models/User.model";
 import {IUser} from "../types/user.types";
 import {ApiError} from "../errors/api.error";
 import {IPaginationResponse, IQuery} from "../types/pagination.type";
+import {UploadedFile} from "express-fileupload"
+import {s3Service} from "./s3.service";
+
 
 class UserService{
    public async getAll():Promise<IUser[]>{
@@ -13,7 +16,7 @@ class UserService{
 
    }
 
-   public async getWithPagination(query:IQuery):Promise<IPaginationResponse<any>>{
+   public async getWithPagination(query: IQuery):Promise<IPaginationResponse<any>>{
        try {
            const queryStr = JSON.stringify(query);
            const queryObj = JSON.parse(
@@ -56,6 +59,23 @@ class UserService{
            throw new ApiError(e.message,e.status);
        }
    }
+    public async uploadAvatar(
+        file: UploadedFile,
+        userId: string
+    ): Promise<IUser> {
+        try {
+            const filePath = await s3Service.uploadPhoto(file, "user", userId);
+
+            return await User.findByIdAndUpdate(
+                userId,
+                { avatar: filePath },
+                { new: true }
+            );
+        } catch (e) {
+            throw new ApiError(e.message, e.status);
+        }
+    }
+
 }
 
 export const userService = new UserService()

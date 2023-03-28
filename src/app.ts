@@ -9,11 +9,13 @@ import {authRouter} from "./routers/auth.router";
 import {ApiError} from "./errors/api.error";
 import {cronRunner} from "./crons/cron.runner";
 import {carRouter} from "./routers/car.router";
+import fileUploader from "express-fileupload"
 
 
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+app.use(fileUploader())
 app.use("/cars", carRouter);
 app.use("/users",userRouter);
 app.use("/auth", authRouter);
