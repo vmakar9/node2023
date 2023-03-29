@@ -1,5 +1,5 @@
 import {configs} from "../configs/config";
-import {PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
+import {DeleteObjectCommand, PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
 import {extname} from "node:path"
 import {v4} from "uuid";
 import {UploadedFile} from "express-fileupload"
@@ -34,6 +34,15 @@ class S3Service {
         return `${configs.AWS_S3_URL}/${filePath}`;
     }
 
+    public async deletePhoto(filePath: string): Promise<void> {
+        await this.client.send(
+            new DeleteObjectCommand({
+                Bucket: configs.AWS_S3_NAME,
+                Key: filePath,
+            })
+        );
+    }
+
     private buildPath(
         fileName: string,
         itemType: string,
@@ -41,6 +50,8 @@ class S3Service {
     ): string {
         return `${itemType}/${itemId}/${v4()}${extname(fileName)}`;
     }
+
+
 }
 
 export const s3Service = new S3Service();

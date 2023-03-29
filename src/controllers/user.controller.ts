@@ -5,6 +5,7 @@ import {userService} from "../services/user.service";
 import {ICommonResponse} from "../types/common.types";
 import {IQuery} from "../types/pagination.type";
 import {UploadedFile} from "express-fileupload";
+import {userMapper} from "../mapper/user.mapper";
 
 class UserController {
     public async getAll(req:Request,res:Response,next:NextFunction):Promise<Response<IUser[]>>{
@@ -78,6 +79,23 @@ class UserController {
             const user = await userService.uploadAvatar(avatar, userId);
 
             return res.status(201).json(user);
+        } catch (e) {
+            next(e);
+        }
+    }
+    public async deleteAvatar(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<Response<IUser>> {
+        try {
+            const userEntity = res.locals.user as IUser;
+
+            const user = await userService.deleteAvatar(userEntity);
+
+            const response = userMapper.toResponse(user);
+
+            return res.status(201).json(response);
         } catch (e) {
             next(e);
         }
