@@ -31,7 +31,7 @@ class S3Service {
                 ACL: configs.AWS_S3_ACL,
             })
         );
-        return `${configs.AWS_S3_URL}/${filePath}`;
+        return filePath;
     }
 
     public async deletePhoto(filePath: string): Promise<void> {
